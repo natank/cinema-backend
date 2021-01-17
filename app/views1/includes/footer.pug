@@ -1,0 +1,22 @@
+.section.footer.bg-success
+  a.navbar-brand.footer__logo(href='#') 
+    h2.navbar-brand__main.text-light MovieNG
+  div.footer__main
+    div.footer__content
+      h4.mb-4
+        - var disabled = authUser && (authUser.permissions.isAdmin || authUser.permissions.movies.create) ? "":"disabled"
+        a(href="/movies/create" class=disabled).text-decoration-none Create Movies
+    div.footer__content
+      h4.mb-4
+        - var disabled = authUser && (authUser.permissions.isAdmin || authUser.permissions.movies.view) ? "":"disabled"      
+        a(href="/search" class=disabled).text-decoration-none Search Movies
+    div.footer__content
+      h4.mb-4
+        - var disabled = authUser && authUser.permissions.isAdmin ? "":"disabled"
+        a(href="/users" class=disabled).text-decoration-none Manage Users
+
+  div.footer__copyrights.text-center
+    p All Rights Reserved
+    p Created By: Nati Kamuhser, natan.kamusher@gmail.com
+
+

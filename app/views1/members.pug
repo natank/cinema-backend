@@ -1,0 +1,17 @@
+extends ./templates/container.pug
+block content
+  section.hero
+    p.hero__text.m-0 
+      | View Members
+
+  include includes/members-nav
+  h2.text-center.my-4 Subscriptions
+  if members.length < 1
+    p No members 
+  else
+    .row
+      each member in members
+        .col-sm-6.d-flex.justify-content-center
+          include ./includes/member-card            
+
+  include ./includes/footer.pug

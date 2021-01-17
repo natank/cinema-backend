@@ -1,0 +1,18 @@
+extends ./templates/container.pug
+block content
+  section.hero
+    p.hero__text.m-0 
+      | View and Filter Movies
+
+  include includes/movies-nav
+  h2.text-center.my-4 Movies
+  if movies.length < 1
+    p No movies, try another filter 
+  else
+    .row
+      each movie in movies
+        .col.col-lg-6.col-md-12.d-flex.justify-content-center
+          include ./includes/movie-card
+          
+
+  include ./includes/footer.pug
