@@ -17,7 +17,7 @@ export async function createUser(settings) {
 export async function findById(userId) {
 	var users = await usersDal.getUsers();
 	var user = users.find(user => user.userId == userId);
-	return user.permissions;
+	return user ? user.permissions : undefined;
 }
 
 export async function updateUser(userId, newPermissions) {

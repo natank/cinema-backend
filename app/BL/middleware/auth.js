@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 export const isLoggedIn = (req, res, next) => {
 	if (req.session.user) {
 		next();
@@ -8,7 +10,6 @@ export const isLoggedIn = (req, res, next) => {
 };
 
 export const isAdmin = (req, res, next) => {
-	if (true) return next();
 	if (req.session.user && req.session.user.isAdmin) {
 		next();
 	} else {
@@ -19,21 +20,27 @@ export const isAdmin = (req, res, next) => {
 
 /**Middleware */
 export function isAuth(req, res, next) {
-	if (true) return next();
-	var { user } = req.session;
-	var route = { url: req.originalUrl, method: req.method };
-	if (!user) {
-		req.flash('error', 'You must be logged in to access this route');
-		res.redirect('/login');
-	} else if (!checkPermissionsToRoute(user, route)) {
-		req.flash(
-			'error',
-			"You don't have the right permissions to access this route"
-		);
-		res.redirect('/');
-	} else {
-		return next();
+	const authHeader = req.get('Authorization');
+	if (!authHeader) {
+		const error = new Error('Not authenticated');
+		error.statusCode = 401;
+		console.log('not authorized request');
+		return next(error);
 	}
+	const token = authHeader.split(' ')[1];
+	try {
+		var decodedToken = jwt.verify(token, 'parserdepracated');
+	} catch (error) {
+		error.statusCode = 500;
+		throw error;
+	}
+	if (!decodedToken) {
+		const error = new Error('Not authenticated.');
+		error.statusCode = 401;
+		throw error;
+	}
+	req.userId = decodedToken.userId;
+	next();
 }
 
 function checkPermissionsToRoute(user, currRoute) {

@@ -2,6 +2,7 @@ import { check, body } from 'express-validator/check';
 import { validationResult } from 'express-validator/check';
 import * as User from '../models/User';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export async function getLogin(req, res, next) {
 	res.json({
@@ -24,14 +25,22 @@ export async function postLogin(req, res, next) {
 	// logInUser()
 
 	function signInUser() {
-		req.session.user = req.user;
-		req.session.cookie.maxAge = Number(req.user.sessionTimeOut) * 60000;
+		var loadedUser = req.user;
+		const userId = loadedUser._id.toString();
+		var token = jwt.sign(
+			{
+				username: loadedUser.username,
+				userId,
+			},
+			'parserdepracated',
+			{ expiresIn: '1h' }
+		);
 
-		res.status(200).end();
+		res.status(200).json({ token, userId, user: { ...loadedUser } });
 	}
 
 	function cancelSignIn() {
-		res.status(422).json({
+		res.status(200).json({
 			errorMessage: errors.array()[0].msg,
 			oldInput: {
 				username,
@@ -54,14 +63,14 @@ exports.getLogout = async (req, res, next) => {
 };
 export async function getSignup(req, res, next) {}
 
-export async function postCreateUser(req, res, next) {
+export async function postCreateUser__Deprecated(req, res, next) {
 	var { username, transactions, password } = req.body;
 	let hashedPassword = await bcrypt.hash(password, 12);
 	await User.createUser({ username, transactions, password: hashedPassword });
 	res.status(200).end();
 }
 
-export async function postUpdateUser(req, res, next) {
+export async function postUpdateUser__Deprecated(req, res, next) {
 	var users = await User.getUsers();
 	var { id } = req.params;
 	var { username, password, transactions } = req.body;
@@ -87,7 +96,10 @@ export var validateUsername = body('username') //validate username
 		}
 
 		if (!user) {
-			throw new Error('Incorrect username');
+			const error = new Error('Incorrect username');
+			error.statusCode = 401;
+			console.log(error);
+			throw error;
 		} else {
 			req.user = user;
 			return true;
@@ -106,8 +118,18 @@ export var validatePassword = body('password', 'password error') // validate pas
 	.custom(async (value, { req }) => {
 		let { password } = req.body;
 		if (req.user) {
-			let doMatch = await bcrypt.compare(password, req.user.password);
+			try {
+				var doMatch = await bcrypt.compare(password, req.user.password);
+			} catch (error) {
+				console.log(error);
+			}
+
 			if (doMatch) return true;
-			else throw new Error('Incorrect password');
+			else {
+				var error = new Error('Incorrect password');
+				error.statusCode = 401;
+				console.log(error);
+				throw error;
+			}
 		}
 	});

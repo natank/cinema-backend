@@ -18,7 +18,6 @@ export async function getMovie(req, res, next) {
 		var movie = movieId ? await Movie.findById(movieId) : undefined;
 		res.status(200).json({ movie });
 	} catch (err) {
-		req.flash('error', 'movie not found');
 		res.status(404).end();
 		throw err;
 	}

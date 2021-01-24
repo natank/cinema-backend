@@ -1,6 +1,0 @@
-ul.nav
-  li.nav-item
-    a(href="/members").nav-link All Members
-  li.nav-item
-    - var disabled = authUser && (authUser.permissions.isAdmin || authUser.permissions.subscriptions.create) ? "":"disabled"
-    a(href="/members/create" class=disabled).nav-link Add Member

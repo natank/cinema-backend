@@ -14,13 +14,7 @@ import memberRouter from './routes/members';
 import subscriptionRouter from './routes/subscriptions';
 import setLocals from './BL/middleware/setLocals';
 
-import * as moviesController from './BL/movies';
-
 import * as authController from './BL/auth';
-import * as User from './models/User';
-
-import { isAuth } from './BL/middleware/auth';
-import hasTransactions from './BL/middleware/hasTransactions';
 
 connectDB();
 
@@ -54,6 +48,11 @@ if (!isProd) {
  *
  * */
 const app = express();
+/** CORS headers */
+app.use((req, res, next) => {
+	console.log('request arrived');
+	next();
+});
 
 /**
  * data middleware
@@ -105,28 +104,8 @@ if (!isProd) {
  */
 
 const generalMW = (function (app) {
-	app.set('view engine', 'pug');
-	app.set('views', path.join(__dirname, './views'));
-
 	app.use(express.static(path.join(__dirname, '../dist')));
 	app.use(express.static(path.join(__dirname, '../fonts')));
-})(app);
-
-const userMW = (function (app) {
-	app.use(async (req, res, next) => {
-		if (req.session.user) {
-			try {
-				let user = await User.findById(req.session.user._id);
-				if (user) {
-					req.user = user;
-				}
-			} catch (err) {
-				console.log(err);
-				next(err);
-			}
-		}
-		next();
-	});
 })(app);
 
 /**
@@ -135,15 +114,25 @@ const userMW = (function (app) {
 
 app.use(setLocals);
 
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader(
+		'Access-Control-Allow-Methods',
+		'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+	);
+	res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+	next();
+});
+
 /**Menu Routes */
 app.get('/', menuRoutes);
 /**Movies Routes */
 
-app.use('/movies', isAuth, movieRouter);
+app.use('/movies', movieRouter);
 /**Members Routes */
-app.use('/members', isAuth, memberRouter);
+app.use('/members', memberRouter);
 /**Subscriptions Routes */
-app.use('/subscriptions', isAuth, subscriptionRouter);
+app.use('/subscriptions', subscriptionRouter);
 /**User Routes */
 app.use('/users', userRouter);
 
@@ -151,17 +140,17 @@ app.use('/users', userRouter);
 app.use('/auth', authRouter);
 app.get('/login', authController.getLogin);
 app.get('/logout', authController.getLogout);
-
+app.put('/signup');
 app.use(function notFound(req, res) {
-	res.render('error', { message: "That page doesn't exist" });
+	res.status(404).end();
 });
 
-app.use(function errorHandler(err, req, res, next) {
-	console.log(err);
-	if (res.headersSent) {
-		return next(err);
-	}
-	res.render('error', { message: 'Something went wrong' });
+app.use(function errorHandler(error, req, res, next) {
+	console.log(error);
+	const status = error.statusCode || 500;
+	const message = error.message;
+	const data = error.data;
+	res.status(status).json({ message, data });
 });
 
 const connect = (async function (app) {

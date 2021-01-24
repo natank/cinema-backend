@@ -3,8 +3,18 @@ import * as UserPermissions from './UserPermissions';
 import * as UserData from './UserData';
 
 export async function createUser(settings) {
-	var { username, firstName, lastName, sessionTimeOut, permissions } = settings;
-	var userPermissions = createUserPermissions(permissions);
+	var {
+		username,
+		firstName,
+		lastName,
+		sessionTimeOut,
+		permissions,
+		isAdmin,
+	} = settings;
+	var userPermissions = createUserPermissions([
+		...permissions,
+		isAdmin ? 'isAdmin' : '',
+	]);
 
 	var userCredentials = new UserCredentials({ username });
 
@@ -55,7 +65,7 @@ export async function findById(userId) {
 	}
 	if (!credentials) return null;
 	var { _id, username, password } = credentials;
-	credentials = { _id, username, password };
+	credentials = { _id: _id.toString(), username, password };
 	var permissionsAndData = await getPermissionsAndData(credentials._id);
 
 	var user = { ...credentials, ...permissionsAndData };
@@ -72,7 +82,8 @@ export async function findByUsername(username) {
 	}
 	if (!credentials) return null;
 	var { _id, username, password } = credentials;
-	credentials = { _id, username, password };
+
+	credentials = { _id: _id.toString(), username, password };
 	var permissionsAndData = await getPermissionsAndData(credentials._id);
 
 	var user = { ...credentials, ...permissionsAndData };
@@ -151,11 +162,13 @@ function createUserPermissions(permissions) {
 			view: false,
 			create: false,
 			delete: false,
+			update: false,
 		},
 		subscriptions: {
 			view: false,
 			create: false,
 			delete: false,
+			update: false,
 		},
 		isAdmin: false,
 	};

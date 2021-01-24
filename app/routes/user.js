@@ -14,11 +14,11 @@ router.get('/:id', userController.getUpdateUser);
 router.delete('/:id', userController.deleteUser);
 
 router.post('/', userController.postCreateUser);
-router.post(
+router.put(
 	'/activate',
 	checkAccountUsername,
 	checkAccountPassword,
-	userController.postActivateAccount
+	userController.putActivateAccount
 );
 router.put('/:id', userController.postUpdateUser);
 

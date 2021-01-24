@@ -72,6 +72,7 @@
 		"formidable": "^1.2.1",
 		"html-loader": "^0.5.5",
 		"jquery": "^3.5.1",
+		"jsonwebtoken": "^8.5.1",
 		"mongodb": "^3.5.3",
 		"mongoose": "^5.7.7",
 		"nodemailer": "^6.3.1",

@@ -2,15 +2,15 @@ import express from 'express';
 
 // import { isLoggedIn as isAuth } from '../BL/middleware/is-auth';
 import * as membersController from '../BL/members';
-
+import { isAuth } from '../BL/middleware/auth';
 const router = express.Router();
 
-router.get('/', membersController.getMembers);
-router.get('/create', membersController.getMember)
+router.get('/', isAuth, membersController.getMembers);
+router.get('/create', isAuth, membersController.getMember);
 
-router.get('/:id', membersController.getMember);
-router.post('/', membersController.postCreateMember);
-router.get('/delete/:id', membersController.getDeleteMember);
-router.post('/update/:id', membersController.postUpdateMember);
+router.get('/:id', isAuth, membersController.getMember);
+router.post('/', isAuth, membersController.postCreateMember);
+router.delete('/:id', isAuth, membersController.getDeleteMember);
+router.put('/:id', isAuth, membersController.postUpdateMember);
 
 export default router;
